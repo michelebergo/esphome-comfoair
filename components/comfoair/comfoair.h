@@ -65,7 +65,7 @@ namespace esphome
       friend class ComfoAirNumber;
 
     public:
-      // Poll every 600ms
+      // Default poll interval is 600ms; overridable from YAML via update_interval.
       ComfoAirComponent() : Climate(),
                             PollingComponent(600),
                             UARTDevice() {}
@@ -494,10 +494,12 @@ namespace esphome
           {
             bypass_valve_open->publish_state(msg[0] != 0);
           }
-          if (preheating_state != nullptr)
-          {
-            preheating_state->publish_state(msg[1] != 0);
-          }
+          // NOTE: VALVE_STATUS byte[1] is the preheating *valve* position
+          // (open/closed), not the preheating active state. Publishing it to
+          // preheating_state here fought with PREHEATING_STATUS byte[2]
+          // (active/inactive) and made the sensor oscillate. The valve position
+          // is exposed separately via preheating_valve, so it is not published
+          // here anymore.
           if (motor_current_bypass != nullptr)
           {
             motor_current_bypass->publish_state(msg[2]);
@@ -1017,8 +1019,7 @@ namespace esphome
       void get_valve_status_()
       {
         if (bypass_valve != nullptr ||
-            bypass_valve_open != nullptr ||
-            preheating_state != nullptr)
+            bypass_valve_open != nullptr)
         {
           ESP_LOGD(TAG, "getting valve status");
           write_command_(CMD_GET_VALVE_STATUS, nullptr, 0);
