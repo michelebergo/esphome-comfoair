@@ -12,7 +12,7 @@ from esphome.const import (CONF_ID, CONF_UART_ID, DEVICE_CLASS_CURRENT,
                            ICON_FAN, CONF_ICON, CONF_INITIAL_VALUE, CONF_MIN_VALUE, CONF_MAX_VALUE, CONF_STEP)
 
 comfoair_ns = cg.esphome_ns.namespace("comfoair")
-ComfoAirComponent = comfoair_ns.class_('ComfoAirComponent', climate.Climate, cg.Component, uart.UARTDevice)
+ComfoAirComponent = comfoair_ns.class_('ComfoAirComponent', climate.Climate, cg.PollingComponent, uart.UARTDevice)
 ComfoAirNumber = comfoair_ns.class_("ComfoAirNumber", number.Number)
 ComfoAirSyncButton = comfoair_ns.class_("ComfoAirSyncButton", button.Button)
 
@@ -640,6 +640,7 @@ CONFIG_SCHEMA = (
       cv.Required(REQUIRED_KEY_NAME): cv.string,
     }
   )
+  .extend(cv.polling_component_schema("600ms"))
   .extend(uart.UART_DEVICE_SCHEMA)
   .extend(comfoair_sensors_schemas)
 )
